@@ -1,5 +1,6 @@
 {
   "python.pythonPath": "/Users/gsmbp3/.local/share/virtualenvs/grad_demo-9e6VMzcJ/bin/python",
   "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true
+  "python.linting.enabled": true,
+  "editor.tabSize": 2
 }
