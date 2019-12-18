@@ -35,7 +35,7 @@ def post_image():
         upload_file = request.files.get(file)
         upload_path = 'data/%s' % upload_file.filename
         upload_file.save(upload_path)
-        new_user[file] = upload_file.filename
+        new_user["name"] = upload_file.filename
         return jsonify(new_user)
 
 if __name__ == '__main__':
