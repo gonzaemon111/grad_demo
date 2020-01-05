@@ -1,12 +1,16 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory, redirect, url_for
 import cv2
 from datetime import datetime
-import os
+from jinja2 import FileSystemLoader
+import os, sys
 import string
 import random
-# import Transformation
+import inspect
+import base64
+from transformation import Transformation
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.config['UPLOAD_FOLDER'] = './tmp'
 app.debug = True
 
 
@@ -27,8 +31,10 @@ def post_json():
 @app.route('/images', methods=['POST'])
 def post_image():
     print("root--------------")
-    print(request.files['file'].filename)
+    print(request.files['file'])
     new_user = {}
+    print(inspect.getmembers(request.files))
+    print("--------------")
     for file in request.files:
         if file is None:
             break
@@ -36,7 +42,25 @@ def post_image():
         upload_path = 'data/%s' % upload_file.filename
         upload_file.save(upload_path)
         new_user["name"] = upload_file.filename
-        return jsonify(new_user)
+    return jsonify(new_user)
+
+'''
+imageのダウンロード
+curl -X GET -o sample.jpg http://127.0.0.1:8080/image/transorm
+↓ 本番
+'''
+@app.route('/image/transorm', methods=['POST'])
+def api_image():
+    img = request.files['image']
+    name = img.filename
+    path = os.path.join(app.config['UPLOAD_FOLDER'], name)
+    img.save(path)
+    # print(url_for(url_path))
+    print("------------1")
+    return_name = Transformation.transform(name)
+    # return redirect(url_for(uploaded_file(name)))
+    return send_from_directory('./transformed', return_name)
+
 
 if __name__ == '__main__':
     app.debug = True
