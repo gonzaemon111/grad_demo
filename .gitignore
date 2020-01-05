@@ -1,3 +1,4 @@
 !data/.gitkeep
 data/**.jpg
 data/**.png
+!data/1.jpg
