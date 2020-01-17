@@ -7,12 +7,12 @@ import string
 import random
 import inspect
 import base64
+import numpy as np
 from transformation import Transformation
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 app.config['UPLOAD_FOLDER'] = './tmp'
 app.debug = True
-
 
 @app.route('/')
 def index():
@@ -49,17 +49,71 @@ imageのダウンロード
 curl -X GET -o sample.jpg http://127.0.0.1:8080/image/transorm
 ↓ 本番
 '''
-@app.route('/image/transorm', methods=['POST'])
+@app.route('/image/transform', methods=['POST'])
 def api_image():
-    img = request.files['image']
-    name = img.filename
+    count = 0
+    image = request.files['sample.jpg']
+    stream = image.stream
+    name = str(count) + '_' + image.name
+    print(name)
     path = os.path.join(app.config['UPLOAD_FOLDER'], name)
-    img.save(path)
-    # print(url_for(url_path))
+    img_array = np.asarray(bytearray(stream.read()), dtype=np.uint8)
     print("------------1")
+    img = cv2.imdecode(img_array, 1)
+    cv2.imwrite(path, img)
+    print("------------2")
+    # print(url_for(url_path))
     return_name = Transformation.transform(name)
     # return redirect(url_for(uploaded_file(name)))
-    return send_from_directory('./transformed', return_name)
+    count = count + 1
+    # return send_from_directory('./resized', return_name)
+    return send_from_directory('./resized', "hoge_resize.jpg")
+
+@app.route("/upload", methods = ["POST"])
+def upload():
+    image = request.files['sample.jpg']
+    stream = image.stream
+    name = image.name
+    print("------------1")
+    print(name)
+    print("------------2")
+    img_array = np.asarray(bytearray(stream.read()), dtype=np.uint8)
+    print("------------3")
+    img = cv2.imdecode(img_array, 1)
+    print("------------4")
+    path = './tmp/' + name
+    print("------------5")
+    cv2.imwrite(path, img)
+    print("------------6")
+    # return send_from_directory('./transformed', name)
+    return jsonify({ 'data': name })
+
+@app.route("/demo", methods=["POST"])
+def demo():
+    image = request.files['sample.jpg']
+    stream = image.stream
+    name = image.name
+    print(name)
+    img_array = np.asarray(bytearray(stream.read()), dtype=np.uint8)
+    img = cv2.imdecode(img_array, 1)
+    path = './tmp/' + name
+    cv2.imwrite(path, img)
+    print("demo------------6")
+    return_name = Transformation.transform(name)
+    # return send_from_directory('./transformed', name)
+    return jsonify({ 'data': return_name })
+
+@app.route('/upload/<filename>')
+def get_image(filename):
+    print(filename)
+    # return send_from_directory('./transformed', "2_perfect.jpg")
+    return send_from_directory('./transformed', "7_perfect.jpg")
+
+
+# return send_from_directory('./transformed', "hoge_resize.jpg")
+# return send_from_directory('./transformed', "2_perfect.jpg")
+# return send_from_directory('./transformed', "3_perfect.jpg")
+# return send_from_directory('./transformed', "7_perfect.jpg")
 
 
 if __name__ == '__main__':
